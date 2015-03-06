@@ -5,7 +5,7 @@ open FSharp.Data
 open FSharp.Data.Sql
 
 [<Literal>]
-let connectionString = @"Data Source=" + __SOURCE_DIRECTORY__ + @"\pincasso.db;Version=3"
+let connectionString = "Data Source=" + __SOURCE_DIRECTORY__ + @"\pincasso.db;Version=3"
 
 [<Literal>]
 let resolutionFolder = __SOURCE_DIRECTORY__
@@ -43,40 +43,31 @@ type JsonInput = JsonProvider<jsonSampleInput>
 
 type JsonOutput = JsonProvider<jsonSampleOutput>
 
-let naprawAdres (input : JsonInput.Root) = 
-    JsonOutput.Root
-        (input.AdresId.ToString(), JsonOutput.Miejscowosc(input.Lokalizacja.Miejscowosc.JsonValue), 
-         input.Lokalizacja.NrDomu, input.Lokalizacja.NrDzialki, input.Lokalizacja.NrMieszkania, 
-         JsonOutput.Miejscowosc(input.Lokalizacja.Poczta.JsonValue), input.Lokalizacja.Skrytka, 
-         JsonOutput.Miejscowosc(input.Lokalizacja.Ulica.JsonValue), input.Lokalizacja.UwagiDodatkowe)
+let naprawAdres input = 
+    input
+    |> JsonInput.Parse
+    |> fun input -> 
+        JsonOutput.Root
+            (input.AdresId.ToString(), 
+             JsonOutput.Miejscowosc(input.Lokalizacja.Miejscowosc.JsonValue), 
+             input.Lokalizacja.NrDomu, input.Lokalizacja.NrDzialki, input.Lokalizacja.NrMieszkania, 
+             JsonOutput.Miejscowosc(input.Lokalizacja.Poczta.JsonValue), input.Lokalizacja.Skrytka, 
+             JsonOutput.Miejscowosc(input.Lokalizacja.Ulica.JsonValue), 
+             input.Lokalizacja.UwagiDodatkowe)
 
-type sql = SqlDataProvider<connectionString, Common.DatabaseProviderTypes.SQLITE, resolutionFolder>
+type sql = SqlDataProvider<Common.DatabaseProviderTypes.SQLITE, connectionString, ResolutionPath=resolutionFolder>
 
 let ctx = sql.GetDataContext()
-let AdresLokalu = int64 (25)
+let adresLokalu = int64 (25)
 
 query { 
-    for atrybut in ctx.``[main].[v_atrybuty_umow]`` do
+    for atrybut in ctx.``[MAIN].[V_ATRYBUTY_UMOW]`` do
         for definicja in atrybut.FK_v_atrybuty_umow_0_0 do
-            where (definicja.atd_typ = AdresLokalu && atrybut.atr_wartosc.Contains("AdresID"))
-            sortBy atrybut.atr_id
-            select atrybut.atr_id
+            where (definicja.ATD_TYP = adresLokalu && atrybut.ATR_WARTOSC.Contains("AdresID"))
+            sortBy atrybut.ATR_ID
+            select atrybut
 }
-|> Seq.toList
-|> List.iteri (fun idx id -> 
-       printfn "%d: %d" idx id
-       let a = 
-           query { 
-               for atrybuty in ctx.``[main].[v_atrybuty_umow]`` do
-                   where (atrybuty.atr_id = id)
-                   select atrybuty
-                   exactlyOne
-           }
-       
-       let poprawiony = 
-           a.atr_wartosc
-           |> JsonInput.Parse
-           |> naprawAdres
-       
-       a.atr_wartosc <- poprawiony.JsonValue.ToString()
+|> Seq.iteri (fun idx a -> 
+       printfn "%d: %d" idx a.ATR_ID
+       a.ATR_WARTOSC <- (naprawAdres a.ATR_WARTOSC).JsonValue.ToString()
        ctx.SubmitUpdates())
