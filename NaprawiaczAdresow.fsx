@@ -51,8 +51,10 @@ let naprawAdres input =
     |> fun input -> 
         let lok = input.Lokalizacja
         JsonOutput.Lokalizacja
-            (lok.Adres, KVP(lok.Miejscowosc.JsonValue), lok.NrDomu, lok.NrDzialki, lok.NrMieszkania, 
-             KVP(lok.Poczta.JsonValue), lok.Skrytka, KVP(lok.Ulica.JsonValue), lok.UwagiDodatkowe)
+            (adres = lok.Adres, miejscowosc = KVP(lok.Miejscowosc.JsonValue), nrDomu = lok.NrDomu, 
+             nrDzialki = lok.NrDzialki, nrMieszkania = lok.NrMieszkania, 
+             poczta = KVP(lok.Poczta.JsonValue), skrytka = lok.Skrytka, 
+             ulica = KVP(lok.Ulica.JsonValue), uwagiDodatkowe = lok.UwagiDodatkowe)
 
 type sql = SqlDataProvider<Common.DatabaseProviderTypes.SQLITE, connectionString, ResolutionPath=resolutionFolder>
 
