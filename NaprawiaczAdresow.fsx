@@ -41,24 +41,24 @@ let jsonSampleOutput = """{
 
 type JsonInput = JsonProvider<jsonSampleInput>
 
-type JsonOutput = JsonProvider<jsonSampleOutput>
+type JsonOutput = JsonProvider<jsonSampleOutput, RootName="Lokalizacja">
+
+type KVP = JsonOutput.Miejscowosc
 
 let naprawAdres input = 
     input
     |> JsonInput.Parse
     |> fun input -> 
-        JsonOutput.Root
-            (input.AdresId.ToString(), 
-             JsonOutput.Miejscowosc(input.Lokalizacja.Miejscowosc.JsonValue), 
+        JsonOutput.Lokalizacja
+            (input.AdresId.ToString(), KVP(input.Lokalizacja.Miejscowosc.JsonValue), 
              input.Lokalizacja.NrDomu, input.Lokalizacja.NrDzialki, input.Lokalizacja.NrMieszkania, 
-             JsonOutput.Miejscowosc(input.Lokalizacja.Poczta.JsonValue), input.Lokalizacja.Skrytka, 
-             JsonOutput.Miejscowosc(input.Lokalizacja.Ulica.JsonValue), 
-             input.Lokalizacja.UwagiDodatkowe)
+             KVP(input.Lokalizacja.Poczta.JsonValue), input.Lokalizacja.Skrytka, 
+             KVP(input.Lokalizacja.Ulica.JsonValue), input.Lokalizacja.UwagiDodatkowe)
 
 type sql = SqlDataProvider<Common.DatabaseProviderTypes.SQLITE, connectionString, ResolutionPath=resolutionFolder>
 
 let ctx = sql.GetDataContext()
-let adresLokalu = int64 (25)
+let adresLokalu = 25L
 
 query { 
     for atrybut in ctx.``[MAIN].[V_ATRYBUTY_UMOW]`` do
