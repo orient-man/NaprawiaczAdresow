@@ -49,11 +49,10 @@ let naprawAdres input =
     input
     |> JsonInput.Parse
     |> fun input -> 
+        let lok = input.Lokalizacja
         JsonOutput.Lokalizacja
-            (input.AdresId.ToString(), KVP(input.Lokalizacja.Miejscowosc.JsonValue), 
-             input.Lokalizacja.NrDomu, input.Lokalizacja.NrDzialki, input.Lokalizacja.NrMieszkania, 
-             KVP(input.Lokalizacja.Poczta.JsonValue), input.Lokalizacja.Skrytka, 
-             KVP(input.Lokalizacja.Ulica.JsonValue), input.Lokalizacja.UwagiDodatkowe)
+            (lok.Adres, KVP(lok.Miejscowosc.JsonValue), lok.NrDomu, lok.NrDzialki, lok.NrMieszkania, 
+             KVP(lok.Poczta.JsonValue), lok.Skrytka, KVP(lok.Ulica.JsonValue), lok.UwagiDodatkowe)
 
 type sql = SqlDataProvider<Common.DatabaseProviderTypes.SQLITE, connectionString, ResolutionPath=resolutionFolder>
 
