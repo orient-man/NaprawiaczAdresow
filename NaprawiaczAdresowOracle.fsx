@@ -7,7 +7,7 @@ open FSharp.Data.Sql
 let resolutionFolder = __SOURCE_DIRECTORY__
 
 [<Literal>]
-let connectionString = "Data Source=192.168.20.203:1521/once;User ID=pincasso;Password=1"
+let connectionString = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.20.203)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=once)));User Id=pincasso;Password=1;"
 
 type sql = SqlDataProvider<Common.DatabaseProviderTypes.ORACLE, connectionString, ResolutionPath=resolutionFolder, Owner = "PINCASSO">
 let ctx = sql.GetDataContext()
